@@ -26,6 +26,9 @@ import androidx.compose.ui.input.pointer.consumeDownChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.piotrprus.listperformance.ui.theme.ListPerformanceTheme
@@ -65,6 +68,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun BarChartCanvas(list: List<Int>, barSelected: (Int) -> Unit) {
     Row(
@@ -116,6 +120,8 @@ fun BarChartCanvas(list: List<Int>, barSelected: (Int) -> Unit) {
         val scope = rememberCoroutineScope()
         val animatable = remember { Animatable(1f) }
         val tempAnimatable = remember { Animatable(0f) }
+
+        val textMeasurer = rememberTextMeasurer()
 
         Canvas(
             modifier = Modifier
@@ -195,15 +201,13 @@ fun BarChartCanvas(list: List<Int>, barSelected: (Int) -> Unit) {
                     size = Size(barWidth, barHeight),
                     cornerRadius = CornerRadius(cornerRadius)
                 )
-                this.drawIntoCanvas { canvas ->
-                    val textPositionY = chartAreaBottom - barHeight - smallPadding
-                    canvas.nativeCanvas.drawText(
-                        "${item.value}",
-                        horizontalPadding + distance.times(index),
-                        textPositionY,
-                        paint
-                    )
-                }
+                val textPositionY = chartAreaBottom - barHeight - smallPadding - 10f
+                val textPositionX = horizontalPadding + distance.times(index) - barWidth / 2
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = "${item.value}",
+                    topLeft = Offset(textPositionX, textPositionY)
+                )
             }
             if (selectedBar != null) {
                 drawRoundRect(
